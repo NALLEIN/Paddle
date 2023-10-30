@@ -137,6 +137,19 @@ if(WITH_XPU_BKCL)
   include_directories(${XPU_BKCL_INC_DIR})
 endif()
 
+set(XPU_XFT_LOCAL_PATH "/ssd1/jianghao17/Code/baidu/xpu/xft/output")
+set(XPU_XFT_INC_LOCAL_PATH "${XPU_XFT_LOCAL_PATH}/include")
+set(XPU_XFT_LIB_LOCAL_PATH "${XPU_XFT_LOCAL_PATH}/so/libxft.so")
+set(XPU_XDNN_LOCAL_PATH "/ssd1/jianghao17/Code/baidu/xpu/api/output")
+set(XPU_XDNN_INC_LOCAL_PATH "${XPU_XDNN_LOCAL_PATH}/include/xpu/")
+set(XPU_XDNN_LIB_LOCAL_PATH "${XPU_XDNN_LOCAL_PATH}/so/libxpuapi.so")
+
+# ${XPU_XDNN_DIR_NAME} ${XPU_XCCL_URL} ${XPU_XCCL_DIR_NAME} &&
+# cp -r ${XPU_XFT_INC_LOCAL_PATH} xpu/include/xft &&
+# cp -r ${XPU_XFT_LIB_LOCAL_PATH} xpu/lib/ &&
+# cp -r ${XPU_XDNN_INC_LOCAL_PATH} xpu/include/ &&
+# cp -r ${XPU_XDNN_LIB_LOCAL_PATH} xpu/lib/
+
 ExternalProject_Add(
   ${XPU_PROJECT}
   ${EXTERNAL_PROJECT_LOG_ARGS}
@@ -147,8 +160,11 @@ ExternalProject_Add(
     ${XPU_XCCL_BASE_URL} && bash
     ${CMAKE_SOURCE_DIR}/tools/xpu/pack_paddle_depence.sh ${XPU_XRE_URL}
     ${XPU_XRE_DIR_NAME} ${XPU_XDNN_URL} ${XPU_XDNN_DIR_NAME} ${XPU_XCCL_URL}
-    ${XPU_XCCL_DIR_NAME} && wget ${XPU_XFT_GET_DEPENCE_URL} && bash
-    get_xft_dependence.sh ${XPU_XFT_URL} ${XPU_XFT_DIR_NAME} &&
+    ${XPU_XCCL_DIR_NAME} &&     
+    cp -r ${XPU_XDNN_INC_LOCAL_PATH} xpu/include/ &&
+    cp -r ${XPU_XDNN_LIB_LOCAL_PATH} xpu/lib/ &&
+    cp -r ${XPU_XFT_INC_LOCAL_PATH} xpu/include/xft &&
+    cp -r ${XPU_XFT_LIB_LOCAL_PATH} xpu/lib/ &&
     WITH_XPTI=${WITH_XPTI} bash
     ${CMAKE_SOURCE_DIR}/tools/xpu/get_xpti_dependence.sh ${XPU_XPTI_URL}
     ${XPU_XPTI_DIR_NAME}
