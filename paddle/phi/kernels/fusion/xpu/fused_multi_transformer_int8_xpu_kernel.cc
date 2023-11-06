@@ -326,7 +326,18 @@ void FusedMultiTransformerInt8XpuKernel(
         PADDLE_ENFORCE_XDNN_SUCCESS(r, "xpu::copy");
       } else {  // inplace gather
         if (index_type == DataType::INT32) {
-          r = xpu::gather<XPUTypeT, int32_t>(
+          //   r = xpu::gather<XPUTypeT, int32_t>(
+          //       ctx.x_context(),
+          //       cache_kv_data,
+          //       gather_index_t->data<int32_t>(),
+          //       cache_kv_data,
+          //       phi::vectorize<int64_t>(cache_kv_dims),
+          //       gather_index_t->dims().size() == 0 ? 1
+          //                                          :
+          //                                          gather_index_t->dims()[0],
+          //       gather_axis);
+
+          r = xpu::gather_part<XPUTypeT, int32_t>(
               ctx.x_context(),
               cache_kv_data,
               gather_index_t->data<int32_t>(),
@@ -334,19 +345,36 @@ void FusedMultiTransformerInt8XpuKernel(
               phi::vectorize<int64_t>(cache_kv_dims),
               gather_index_t->dims().size() == 0 ? 1
                                                  : gather_index_t->dims()[0],
-              gather_axis);
+              gather_axis,
+              1,
+              160,
+              time_step_value - 160);
         } else {
-          r = xpu::gather<XPUTypeT, int64_t>(
+          //   r = xpu::gather<XPUTypeT, int64_t>(
+          //       ctx.x_context(),
+          //       cache_kv_data,
+          //       gather_index_t->data<int64_t>(),
+          //       cache_kv_data,
+          //       phi::vectorize<int64_t>(cache_kv_dims),
+          //       gather_index_t->dims().size() == 0 ? 1
+          //                                          :
+          //                                          gather_index_t->dims()[0],
+          //       gather_axis);
+
+          r = xpu::gather_part<XPUTypeT, int64_t>(
               ctx.x_context(),
               cache_kv_data,
               gather_index_t->data<int64_t>(),
-              cache_kv_data
+              cache_kv_data,
               phi::vectorize<int64_t>(cache_kv_dims),
               gather_index_t->dims().size() == 0 ? 1
                                                  : gather_index_t->dims()[0],
-              gather_axis);
+              gather_axis,
+              1,
+              160,
+              time_step_value - 160);
+          PADDLE_ENFORCE_XDNN_SUCCESS(r, "xpu::gather_inplace");
         }
-        PADDLE_ENFORCE_XDNN_SUCCESS(r, "xpu::gather_inplace");
       }
     }
 
