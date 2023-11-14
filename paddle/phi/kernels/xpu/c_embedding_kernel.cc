@@ -25,9 +25,10 @@ void CEmbeddingKernel(const Context& dev_ctx,
                       const DenseTensor& ids,
                       int64_t start_index,
                       DenseTensor* out) {
-  const T* table_data = w.data<T>();
-  T* output_data = dev_ctx.template Alloc<T>(out);
-
+  using XPUType = typename XPUTypeTrait<T>::Type;
+  const XPUType* table_data = reinterpret_cast<const XPUType*>(w.data<T>());
+  dev_ctx.template Alloc<T>(out);
+  auto output_data = reinterpret_cast<XPUType*>(out->data<T>());
   const int64_t height = w.dims()[0];
   const int64_t width = w.dims()[1];
 
@@ -68,5 +69,9 @@ void CEmbeddingKernel(const Context& dev_ctx,
 }
 }  // namespace phi
 
-PD_REGISTER_KERNEL(c_embedding, XPU, ALL_LAYOUT, phi::CEmbeddingKernel, float) {
-}
+PD_REGISTER_KERNEL(c_embedding,
+                   XPU,
+                   ALL_LAYOUT,
+                   phi::CEmbeddingKernel,
+                   float,
+                   phi::dtype::float16) {}
